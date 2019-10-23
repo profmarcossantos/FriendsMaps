@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
 import firebase from 'firebase'
-
+import { Link } from 'react-router-dom'
 export default class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
       email: "",
-      password: ""
+      password: "",
+      errorMessage: "",
+      successMessage: ""
     }
 
     var firebaseConfig = {
@@ -23,10 +25,35 @@ export default class App extends Component {
   }
 
   salvarUsuario() {
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(this.state.email, this.state.password)
+      .then(usuario => {
+        this.setState({ successMessage: "Usuário criado com sucesso!" })
+        this.setState({ errorMessage: "" })
+        sessionStorage.setItem("uid", usuario.user.uid)
+      })
+      .catch(error => {
+        this.setState({ errorMessage: error.message })
+        this.setState({ successMessage: "" })
+      })
 
-    
+
   }
   login() {
+
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(this.state.email, this.state.password)
+      .then((usuario) => {
+        sessionStorage.setItem("uid", usuario.user.uid)
+        this.props.history.push("/menu")
+
+      })
+      .catch(() => {
+        this.setState({ errorMessage: "Usuário ou senha incorretos!", successMessage: "" })
+      })
+
 
   }
 
@@ -35,6 +62,8 @@ export default class App extends Component {
     return (
       <div style={{ textAlign: 'center' }}>
         <h1>LOGIN</h1>
+        <h4 style={{ color: "red" }} >{this.state.errorMessage}</h4>
+        <h4 style={{ color: "green" }} >{this.state.successMessage}</h4>
         <input
           placeholder="Informe o seu e-mail"
           type="email"
