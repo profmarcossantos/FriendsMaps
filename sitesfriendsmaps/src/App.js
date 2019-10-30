@@ -1,6 +1,14 @@
 import React, { Component } from 'react'
-import firebase from 'firebase'
-import { Link } from 'react-router-dom'
+import { login, signUp } from './services/auth'
+import { css } from '@emotion/core';
+import { BarLoader} from 'react-spinners';
+
+const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: red;
+`;
+
 export default class App extends Component {
   constructor(props) {
     super(props)
@@ -8,85 +16,64 @@ export default class App extends Component {
       email: "",
       password: "",
       errorMessage: "",
-      successMessage: ""
+      successMessage: "",
+      loading: false
     }
-
-    var firebaseConfig = {
-      apiKey: "AIzaSyBX2Vu7naENdJUGEzC1NiPfPWn6LVh4Vi4",
-      authDomain: "friendsmaps-5198b.firebaseapp.com",
-      databaseURL: "https://friendsmaps-5198b.firebaseio.com",
-      projectId: "friendsmaps-5198b",
-      storageBucket: "friendsmaps-5198b.appspot.com",
-      messagingSenderId: "910339080484",
-      appId: "1:910339080484:web:2e02ff995f52b42721f3b1",
-      measurementId: "G-V4VPNWYBWM"
-    };
-    firebase.initializeApp(firebaseConfig);
   }
 
-  salvarUsuario() {
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(this.state.email, this.state.password)
-      .then(usuario => {
-        this.setState({ successMessage: "Usuário criado com sucesso!" })
-        this.setState({ errorMessage: "" })
-        sessionStorage.setItem("uid", usuario.user.uid)
-      })
-      .catch(error => {
-        this.setState({ errorMessage: error.message })
-        this.setState({ successMessage: "" })
-      })
-
-
-  }
-  login() {
-
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(this.state.email, this.state.password)
-      .then((usuario) => {
-        sessionStorage.setItem("uid", usuario.user.uid)
-        this.props.history.push("/menu")
-
-      })
-      .catch(() => {
-        this.setState({ errorMessage: "Usuário ou senha incorretos!", successMessage: "" })
-      })
-
-
+  salvarUsuario = async () => {
+    this.setState({ loading: true })
+    await signUp(this.state.email, this.state.password)
+      .then(msg => this.setState({ successMessage: msg, errorMessage: "" }))
+      .catch(msg => this.setState({ errorMessage: msg.message, successMessage: "" }))
+    this.setState({ loading: false })
   }
 
+  logon = async() => {
+  this.setState({ loading: true })
+  await login(this.state.email, this.state.password)
+    .then(() => this.props.history.push("/menu"))
+    .catch(erro => this.setState({ errorMessage: erro.message }))
+}
 
-  render() {
-    return (
-      <div style={{ textAlign: 'center' }}>
-        <h1>LOGIN</h1>
-        <h4 style={{ color: "red" }} >{this.state.errorMessage}</h4>
-        <h4 style={{ color: "green" }} >{this.state.successMessage}</h4>
-        <input
-          placeholder="Informe o seu e-mail"
-          type="email"
-          value={this.state.email}
-          onChange={
-            (e) => this.setState({ email: e.target.value })
-          }
-        />
-        <br />
-        <input
-          placeholder="Informe sua senha"
-          type="password"
-          value={this.state.password}
-          onChange={
-            (e) => this.setState({ password: e.target.value })
-          }
 
-        />
-        <br />
-        <button onClick={() => this.login()}>ENTRAR</button>
-        <button onClick={() => this.salvarUsuario()}>NOVO USUÁRIO</button>
+render() {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <h1>LOGIN</h1>
+      <BarLoader
+        css={override}
+        sizeUnit={"px"}
+        size={150}
+        color={'#123abc'}
+        loading={this.state.loading}
+      />
 
-      </div>
-    )
-  }
+      <h4 style={{ color: "red" }} >{this.state.errorMessage}</h4>
+      <h4 style={{ color: "green" }} >{this.state.successMessage}</h4>
+      <input
+        placeholder="Informe o seu e-mail"
+        type="email"
+        value={this.state.email}
+        onChange={
+          (e) => this.setState({ email: e.target.value })
+        }
+      />
+      <br />
+      <input
+        placeholder="Informe sua senha"
+        type="password"
+        value={this.state.password}
+        onChange={
+          (e) => this.setState({ password: e.target.value })
+        }
+
+      />
+      <br />
+      <button onClick={() => this.logon()}>ENTRAR</button>
+      <button onClick={() => this.salvarUsuario()}>NOVO USUÁRIO</button>
+
+    </div>
+  )
+}
 }
