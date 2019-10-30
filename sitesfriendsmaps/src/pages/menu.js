@@ -90,8 +90,8 @@ export default class Menu extends Component {
 
                 <hr />
                 {
-                    this.state.listaAmigos.map((amigo, key) => {
-                        return <div key="key">
+                    this.state.listaAmigos.map((amigo, i) => {
+                        return <div key= {i}>
                             {amigo.nome} - {amigo.email} - {amigo.endereco}
                         </div>
                     })
