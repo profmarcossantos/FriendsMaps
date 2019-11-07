@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import { logoff } from '../services/auth'
-import { saveFriend, getFriends } from '../services/api'
+import { saveFriend, getFriends, deleteFriend } from '../services/api'
 import { css } from '@emotion/core';
 import { BarLoader } from 'react-spinners';
+import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
 const override = css`
     display: block;
@@ -10,7 +11,7 @@ const override = css`
     border-color: red;
 `;
 
-export default class Menu extends Component {
+export class Menu extends Component {
 
     constructor(props) {
         super(props)
@@ -26,9 +27,14 @@ export default class Menu extends Component {
         }
     }
 
-    componentDidMount() {
+    componentDidMount = async () => {
+        this.atualizarDados()
+    }
+
+    atualizarDados() {
         getFriends()
             .then(dados => this.setState({ listaAmigos: dados }))
+
     }
 
     limparDados = () => {
@@ -39,12 +45,19 @@ export default class Menu extends Component {
         })
     }
 
+
+    deleteAmigo(chave) {
+        deleteFriend(chave)
+            .then(() => this.atualizarDados())
+    }
+
     salvarDados = async () => {
         this.setState({ loading: true })
         await saveFriend(this.state.nome, this.state.email, this.state.endereco)
             .then(msg => this.setState({ successMessage: msg, errorMessage: "" }))
             .catch(msg => this.setState({ errorMessage: msg.message, successMessage: "" }))
         this.setState({ loading: false })
+        this.atualizarDados()
         this.limparDados()
     }
 
@@ -91,14 +104,41 @@ export default class Menu extends Component {
                 <hr />
                 {
                     this.state.listaAmigos.map((amigo, i) => {
-                        return <div key= {i}>
+                        return <div key={i}>
                             {amigo.nome} - {amigo.email} - {amigo.endereco}
+                            - <button
+                                onClick={() => this.deleteAmigo(amigo.id)}
+
+                            >Excluir</button>
                         </div>
                     })
                 }
+                <hr />
+                <Map
+                    google={this.props.google}
+                    zoom={14}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                    }}
+                    initialCenter={{ lat: -28.2649459, lng: -52.3973581 }}
+                >
+                    {
+                        this.state.listaAmigos.map((amigo, i) => {
+                            return <Marker key={i}
+                                title={amigo.nome}
+                                position={amigo.posicao} />
+                        })
+                    }
+
+                </Map>
 
 
             </div>
         )
     }
 }
+
+export default GoogleApiWrapper({
+    apiKey: 'AIzaSyDFpCCXIx9aPrjOrae7Laa_a1MCryxnjKc'
+})(Menu);
