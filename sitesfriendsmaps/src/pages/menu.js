@@ -34,6 +34,7 @@ export class Menu extends Component {
     atualizarDados() {
         getFriends()
             .then(dados => this.setState({ listaAmigos: dados }))
+            .catch(erro => this.props.history.push("/"))
 
     }
 

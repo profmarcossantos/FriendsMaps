@@ -42,8 +42,9 @@ export const deleteFriend = (chave) => {
 export const getFriends = () => {
     return new Promise((resolve, reject) => {
         firebase.auth().onAuthStateChanged(user => {
-            firebase
-                .database()
+            if (user) {
+                firebase
+                    .database()
                 .ref(`/amigos/${user.uid}`)
                 .on('value', snapchot => {
                     let dados = snapchot.val()
@@ -57,6 +58,7 @@ export const getFriends = () => {
                         resolve([])
                     }
                 })
+            } else reject()
 
         })
 

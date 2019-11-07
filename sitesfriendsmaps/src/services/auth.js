@@ -13,12 +13,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 export const isAuthenticated = () => {
-    firebase.auth().onAuthStateChanged(user=>{
-        if (user) return true
-        else return true
-        
-    })
-    return firebase.auth().currentUser !== null
+    return sessionStorage.getItem("login") !== null
 }
 
 export const login = (email, password) => {
@@ -27,6 +22,7 @@ export const login = (email, password) => {
             .auth()
             .signInWithEmailAndPassword(email, password)
             .then(() => {
+                sessionStorage.setItem("login","1") 
                 resolve()
             })
             .catch((erro) => {
@@ -54,6 +50,7 @@ export const signUp = (email, password) => {
 
 
 export const logoff = () => {
+    sessionStorage.removeItem("login")
     return new Promise((resolve, reject) => {
         firebase.auth().signOut()
             .then(() => resolve())
