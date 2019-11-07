@@ -108,7 +108,14 @@ export class Menu extends Component {
                         return <div key={i}>
                             {amigo.nome} - {amigo.email} - {amigo.endereco}
                             - <button
-                                onClick={() => this.deleteAmigo(amigo.id)}
+                                onClick={() => {
+                                    var agree = window.confirm("deseja deletar os dados??");
+                                    if (agree)
+                                        this.deleteAmigo(amigo.id)
+                                    else
+                                        return false;
+                                    
+                                }}
 
                             >Excluir</button>
                         </div>
